@@ -186,7 +186,7 @@ export async function testEnvironment(
   // First cleanup to remove popups
   await handleAllPopups(page);
   
-  // FAST SCROLLING - REDUCED FROM 8 PASSES TO 3 PASSES
+  // FAST SCROLLING - INCREASED PASSES FOR BETTER CONTENT LOADING
   await page.evaluate(async () => {
     // Force critical lazy loading only
     document.querySelectorAll("img[data-src], video[data-src], iframe[data-src]").forEach((el: any) => {
@@ -195,72 +195,72 @@ export async function testEnvironment(
     });
     
     // Wait for initial content to load
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Fast scrolling with reduced passes
+    // Fast scrolling with more passes for better content loading
     const viewportHeight = window.innerHeight;
     let previousHeight = 0;
     
-    // Only 3 passes instead of 8
-    for (let pass = 0; pass < 3; pass++) {
+    // 5 passes instead of 3 for better content loading
+    for (let pass = 0; pass < 5; pass++) {
       const currentHeight = document.body.scrollHeight;
-      if (currentHeight === previousHeight && pass > 1) break;
+      if (currentHeight === previousHeight && pass > 2) break;
       previousHeight = currentHeight;
       
       // Fast scrolling with larger steps
       let position = 0;
       while (position < currentHeight) {
         window.scrollTo(0, position);
-        await new Promise(resolve => setTimeout(resolve, 100)); // Reduced from 300ms
-        position += viewportHeight / 2; // Larger steps
+        await new Promise(resolve => setTimeout(resolve, 150));
+        position += viewportHeight / 2;
       }
       
       // Wait at bottom for content to load
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Reduced from 2000ms
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
     
     // Final scroll to top
     window.scrollTo(0, 0);
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Reduced from 2000ms
+    await new Promise(resolve => setTimeout(resolve, 2000));
   });
   
   // Scroll back to top for screenshot
   await page.evaluate(() => {
     window.scrollTo(0, 0);
-    return new Promise(resolve => setTimeout(resolve, 1000)); // Reduced from 2000ms
+    return new Promise(resolve => setTimeout(resolve, 2000));
   });
   
-  // Wait for network to settle - REDUCED TIMEOUT
+  // Wait for network to settle
   await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(1000); // Reduced from 3000ms
+  await page.waitForTimeout(2000);
   
   // Second popup cleanup
   await handleAllPopups(page);
   
-  // FAST FINAL VERIFICATION - SIMPLIFIED
+  // FINAL VERIFICATION - INCREASED WAIT TIMES
   console.log(`🔥 Final content verification for env${envIndex}...`);
   
   await page.evaluate(() => {
-    // Quick final lazy loading
-    document.querySelectorAll("img[data-src], video[data-src]").forEach((el: any) => {
+    // Force final lazy loading
+    document.querySelectorAll("img[data-src], video[data-src], img[srcset]").forEach((el: any) => {
       if (el.dataset?.src) el.src = el.dataset.src;
       if (el.loading === "lazy") el.loading = "eager";
     });
     
-    // Quick scroll to trigger remaining content
+    // Scroll to trigger remaining content
     window.scrollTo(0, document.body.scrollHeight / 2);
-    return new Promise(resolve => setTimeout(resolve, 500)); // Reduced from 2000ms
+    return new Promise(resolve => setTimeout(resolve, 2000));
   });
   
   await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(1000); // Reduced from 3000ms
+  await page.waitForTimeout(2000);
   
   console.log(`🔥 Fast content loading completed for env${envIndex}`);
   
   // Scroll back to top for screenshot
   await page.evaluate(() => {
     window.scrollTo(0, 0);
-    return new Promise(resolve => setTimeout(resolve, 1000)); // Reduced from 2000ms
+    return new Promise(resolve => setTimeout(resolve, 2000));
   });
   
   // Take screenshot

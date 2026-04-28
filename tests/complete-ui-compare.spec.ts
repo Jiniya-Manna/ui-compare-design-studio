@@ -261,7 +261,7 @@ async function generateComprehensiveReport(results: any[], totalTime: number) {
         
         /* Overlay Comparison Styles */
         .overlay-comparison { position: relative; width: 100%; max-width: 1600px; margin: 0 auto; border-radius: 8px; border: 3px solid #e9ecef; background: #f8f9fa; overflow: auto; cursor: col-resize; }
-        .overlay-container { position: relative; width: 100%; overflow: hidden; }
+        .overlay-container { position: relative; width: 100%; min-height: 100vh; }
         .base-image { position: relative; top: 0; left: 0; width: 100%; height: auto; z-index: 1; display: block; }
         .overlay-image { position: absolute; top: 0; left: 0; width: 100%; height: auto; z-index: 2; }
         .image-divider { position: absolute; top: 0; width: 4px; height: 100%; background: #667eea; cursor: col-resize; z-index: 10; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
@@ -534,6 +534,7 @@ async function generateComprehensiveReport(results: any[], totalTime: number) {
             const modal = document.getElementById('comparisonModal');
             const baseImg = document.getElementById('base-image');
             const overlayImg = document.getElementById('overlay-image');
+            const container = document.getElementById('overlay-container');
             
             // Set up overlay comparison
             baseImg.src = overlayComparison.baseImage;
@@ -541,6 +542,20 @@ async function generateComprehensiveReport(results: any[], totalTime: number) {
             overlayImg.style.opacity = overlayComparison.opacity;
             
             modal.style.display = 'block';
+            
+            // Wait for images to load, then adjust container height
+            baseImg.onload = function() {
+                const baseHeight = baseImg.offsetHeight;
+                container.style.height = baseHeight + 'px';
+            };
+            
+            overlayImg.onload = function() {
+                const overlayHeight = overlayImg.offsetHeight;
+                const baseHeight = baseImg.offsetHeight;
+                const maxHeight = Math.max(baseHeight, overlayHeight);
+                container.style.height = maxHeight + 'px';
+            };
+            
             initializeOverlaySlider();
         }
         
